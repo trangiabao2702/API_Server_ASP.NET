@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API_Server.Controllers
 {
-    [Route("[controller]")]
+    [Route("products")]
     [ApiController]
     public class ProductsController : ControllerBase
     {
