@@ -1,5 +1,6 @@
 ﻿using API_Server.Data;
 using API_Server.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,13 +19,19 @@ namespace API_Server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<User>>> getProfile()
+        [Route("{id}"), Authorize]
+        public async Task<ActionResult<User>> GetProfile(int id)
         {
             try
             {
-                var users = await context.Users.ToListAsync();
+                var user = await context.Users.FindAsync(id);
 
-                return Ok(users);
+                if (user == null)
+                {
+                    return NotFound("User not found!");
+                }
+
+                return Ok(user);
             }
             catch (Exception ex)
             {
