@@ -1,6 +1,7 @@
 ﻿using API_Server.Data;
 using API_Server.Dto;
 using API_Server.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +51,55 @@ namespace API_Server.Controllers
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
             return jwt;
+        }
+
+        [NonAction]
+        private KeyValuePair<string, int> ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:RefreshKey").Value!))
+            };
+
+            try
+            {
+                // Validate Refresh Token
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+
+                if (validatedToken is JwtSecurityToken jwtSecurityToken)
+                {
+                    var checkHeader = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512Signature);
+
+                    if (!checkHeader)
+                    {
+                        return new KeyValuePair<string, int>("Header doesn't match!", 0);
+                    }
+                }
+
+                // Check if Refresh Token was belong to the user who send request
+                int userId = int.Parse(principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value);
+                if (_refreshTokens.ContainsKey(token) && _refreshTokens.ContainsValue(userId))
+                {
+                    // Delete old Refresh Token and generate a new one
+                    return new KeyValuePair<string, int>("Valid token!", userId);
+                }
+                else
+                {
+                    return new KeyValuePair<string, int>("Forbidden!", 0);
+                }
+            }
+            catch (SecurityTokenExpiredException)
+            {
+                return new KeyValuePair<string, int>("Token expired!", 0);
+            }
+            catch (SecurityTokenException)
+            {
+                return new KeyValuePair<string, int>("Token is invalid!", 0);
+            }
         }
 
         [HttpPost("register")]
@@ -130,48 +180,19 @@ namespace API_Server.Controllers
         [HttpPost("refresh-token")]
         public ActionResult<Tokens> RefreshToken([FromBody] string refreshToken)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var validationParameters = new TokenValidationParameters
+            KeyValuePair<string, int> checkToken = ValidateToken(refreshToken);
+
+            if (checkToken.Key == "Valid token!")
             {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:RefreshKey").Value!)),
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
-
-            try
-            {
-                // Validate Refresh Token
-                var principal = tokenHandler.ValidateToken(refreshToken, validationParameters, out var validatedToken);
-
-                if (validatedToken is JwtSecurityToken jwtSecurityToken)
-                {
-                    var checkHeader = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512Signature);
-
-                    if (!checkHeader)
-                    {
-                        return Unauthorized(); 
-                    }
-                }
-
-                // Check if Refresh Token was belong to the user who send request
-                int userId = int.Parse(principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value);
-                if (_refreshTokens.ContainsKey(refreshToken) && _refreshTokens.ContainsValue(userId))
-                {
-                    // Delete old Refresh Token and generate a new one
-                    _refreshTokens.Remove(refreshToken);
-                }
-                else
-                {
-                    return Forbid();
-                }
+                // Delete old Refresh Token
+                _refreshTokens.Remove(refreshToken);
 
                 // Generate new Tokens
-                string newAccessToken = CreateToken(userId);
-                string newRefreshToken = CreateToken(userId, "Refresh");
+                string newAccessToken = CreateToken(checkToken.Value);
+                string newRefreshToken = CreateToken(checkToken.Value, "Refresh");
 
                 // Add new Refresh Token to list
-                _refreshTokens.Add(newRefreshToken, userId);
+                _refreshTokens.Add(newRefreshToken, checkToken.Value);
 
                 // Response
                 var response = new
@@ -182,17 +203,36 @@ namespace API_Server.Controllers
 
                 return Ok(response);
             }
-            catch (SecurityTokenExpiredException)
+            else if (checkToken.Key == "Forbidden!")
             {
-                // Token expired
-                return Unauthorized();
-
+                return Forbid();
             }
-            catch (SecurityTokenException)
+            else
             {
-                // Token is invalid
-                return Unauthorized();
+                return Unauthorized(checkToken.Key);
+            }
+        }
 
+        [HttpDelete("logout"), Authorize]
+        public IActionResult Logout([FromBody] string refreshToken)
+        {
+            KeyValuePair<string, int> checkToken = ValidateToken(refreshToken);
+
+            if (checkToken.Key == "Valid token!")
+            {
+                // Delete old Refresh Token
+                _refreshTokens.Remove(refreshToken);
+
+                // Response
+                return Ok("Logged out successfully!");
+            }
+            else if (checkToken.Key == "Forbidden!")
+            {
+                return Forbid("You haven't logged in!");
+            }
+            else
+            {
+                return Unauthorized(checkToken.Key);
             }
         }
     }
