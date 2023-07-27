@@ -1,6 +1,7 @@
 ﻿using API_Server.Data;
 using API_Server.Dto;
 using API_Server.Models;
+using API_Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,12 +21,15 @@ namespace API_Server.Controllers
     {
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
+        private static List<VerifyCode> _verifyCodes = new List<VerifyCode>();
         private static Dictionary<string, int> _refreshTokens = new Dictionary<string, int>();
 
-        public AuthController(DataContext context, IConfiguration configuration) 
+        public AuthController(DataContext context, IConfiguration configuration, IEmailService emailService) 
         {
-            this._context = context;
-            this._configuration = configuration;
+            _context = context;
+            _configuration = configuration;
+            _emailService = emailService;
         }
 
         [NonAction]
@@ -102,13 +106,34 @@ namespace API_Server.Controllers
             }
         }
 
+        [HttpPost("verify/{id}")]
+        public IActionResult Verify([FromBody] string code, int id)
+        {
+            VerifyCode? verifyCode = _verifyCodes.FirstOrDefault(c => c.Code == code);
+
+            if (verifyCode != null)
+            {
+                bool checkExpired = verifyCode.ExpiredTime.CompareTo(DateTime.Now) < 0;
+                bool checkOwner = verifyCode.Owner == id;
+
+                _verifyCodes.Remove(verifyCode);
+
+                if (!checkExpired && checkOwner)
+                {
+                    return Ok("Verified successfully!");
+                }
+            }
+
+            return BadRequest("Invalid code!");
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register(User request)
         {
             try
             {
                 // Check if username existed
-                User? user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+                User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email || u.Phone == request.Phone );
 
                 if (user == null)
                 {
@@ -117,7 +142,10 @@ namespace API_Server.Controllers
 
                     user = new User();
 
-                    user.Username = request.Username;
+                    user.Email = request.Email;
+                    user.Phone = request.Phone;
+                    user.FirstName = request.FirstName;
+                    user.LastName = request.LastName;
                     user.Password = passwordHash;
 
                     // Add new user to database
@@ -142,7 +170,7 @@ namespace API_Server.Controllers
         {
             try
             {
-                User? user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+                User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Username);
 
                 if (user == null)
                 {
@@ -233,6 +261,72 @@ namespace API_Server.Controllers
             else
             {
                 return Unauthorized(checkToken.Key);
+            }
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] string username)
+        {
+            try
+            {
+                // Check if user exists
+                User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == username || u.Phone == username);
+
+                if (user == null)
+                {
+                    return NotFound("Username doesn't exist!");
+                }
+                else
+                {
+                    // Delete old user's verify codes
+                    _verifyCodes.RemoveAll(c => c.Owner == user.Id);
+
+                    // Send verify code to Email
+                    VerifyCode verifyCode = new VerifyCode(user.Id);
+                    _verifyCodes.Add(verifyCode);
+
+                    var message = new Message
+                    (
+                        new List<string> { "trangiabao.zuki@gmail.com" }, 
+                        "Forgot Password", 
+                        verifyCode.Code
+                    );
+                    // var message = new Message(new List<string> { user.Email }, "Forgot Password", verifyCode.Code);
+                    _emailService.SendEmail(message);
+
+                    return Ok("We have sent verify code to your email!");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("reset-password/{id}")]
+        public async Task<IActionResult> ResetPassword([FromBody] string newPassword, int id)
+        {
+            try
+            {
+                User? user = await _context.Users.FindAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound("User not found!");
+                }
+                else
+                {
+                    string passwordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                    user.Password = passwordHash;
+
+                    _context.SaveChanges();
+
+                    return Ok("Reset password successfully!");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }
