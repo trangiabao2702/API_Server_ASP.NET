@@ -22,6 +22,7 @@ namespace API_Server.Models
 
         [JsonIgnore]
         public DateTime? VerifiedAt { get; set; }
+        public List<Order> Orders { get; set; }
 
         public User()
         {
