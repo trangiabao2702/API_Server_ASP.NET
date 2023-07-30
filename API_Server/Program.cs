@@ -1,6 +1,7 @@
 using API_Server.Data;
 using API_Server.Models;
-using API_Server.Services;
+using API_Server.Services.EmailService;
+using API_Server.Services.ProductService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -43,6 +44,7 @@ builder.Services.AddDbContext<DataContext>();
 builder.Services.AddSingleton(builder.Configuration.GetSection("Email").Get<EmailConfiguration>());
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 

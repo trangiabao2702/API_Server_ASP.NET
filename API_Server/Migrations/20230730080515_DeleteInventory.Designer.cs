@@ -4,6 +4,7 @@ using API_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_Server.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20230730080515_DeleteInventory")]
+    partial class DeleteInventory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,7 +36,7 @@ namespace API_Server.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedAt")
+                    b.Property<DateTime>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -49,17 +52,7 @@ namespace API_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8485),
-                            Description = "Shoes's Decription",
-                            ModifiedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8501),
-                            Name = "Shoes"
-                        });
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("API_Server.Models.Discount", b =>
@@ -95,7 +88,7 @@ namespace API_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Discounts", (string)null);
+                    b.ToTable("Discounts");
                 });
 
             modelBuilder.Entity("API_Server.Models.Order", b =>
@@ -125,7 +118,7 @@ namespace API_Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders", (string)null);
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("API_Server.Models.Payment", b =>
@@ -163,7 +156,7 @@ namespace API_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("API_Server.Models.Product", b =>
@@ -205,53 +198,7 @@ namespace API_Server.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CategoryId = 1,
-                            CreatedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8730),
-                            Description = "The iconic Nike Air Zoom Pegasus 36 offers more cooling and mesh that targets breathability across high-heat areas. A slimmer heel collar and tongue reduce bulk, while exposed cables give you a snug fit at higher speeds.",
-                            Images = "['https://s3-us-west-2.amazonaws.com/s.cdpn.io/1315882/air-zoom-pegasus-36-mens-running-shoe-wide-D24Mcz-removebg-preview.png']",
-                            ModifiedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8731),
-                            Name = "Nike Air Zoom Pegasus 36",
-                            Price = 108.97m
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CategoryId = 1,
-                            CreatedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8733),
-                            Description = "The Nike Air Zoom Pegasus 36 Shield gets updated to conquer wet routes. A water-repellent upper combines with an outsole that helps create grip on wet surfaces, letting you run in confidence despite the weather.",
-                            Images = "['https://s3-us-west-2.amazonaws.com/s.cdpn.io/1315882/air-zoom-pegasus-36-shield-mens-running-shoe-24FBGb__1_-removebg-preview.png']",
-                            ModifiedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8733),
-                            Name = "Nike Air Zoom Pegasus 36 Shield",
-                            Price = 89.97m
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CategoryId = 1,
-                            CreatedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8735),
-                            Description = "Designed for steady, easy-paced movement, the Nike CruzrOne keeps you going. Its rocker-shaped sole and plush, lightweight cushioning let you move naturally and comfortably. The padded collar is lined with soft wool, adding luxury to every step, while mesh details let your foot breathe. There’s no finish line—there’s only you, one step after the next.",
-                            Images = "['https://s3-us-west-2.amazonaws.com/s.cdpn.io/1315882/cruzrone-unisex-shoe-T2rRwS-removebg-preview.png']",
-                            ModifiedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8735),
-                            Name = "Nike CruzrOne",
-                            Price = 100.97m
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CategoryId = 1,
-                            CreatedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8737),
-                            Description = "The Nike Epic React Flyknit 2 takes a step up from its predecessor with smooth, lightweight performance and a bold look. An updated Flyknit upper conforms to your foot with a minimal, supportive design. Underfoot, durable Nike React technology defies the odds by being both soft and responsive, for comfort that lasts as long as you can run.",
-                            Images = "['https://s3-us-west-2.amazonaws.com/s.cdpn.io/1315882/epic-react-flyknit-2-mens-running-shoe-2S0Cn1-removebg-preview.png']",
-                            ModifiedAt = new DateTime(2023, 7, 30, 15, 23, 48, 19, DateTimeKind.Local).AddTicks(8738),
-                            Name = "Nike Epic React Flyknit 2",
-                            Price = 89.97m
-                        });
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("API_Server.Models.User", b =>
@@ -290,7 +237,7 @@ namespace API_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("DiscountProduct", b =>
@@ -305,7 +252,7 @@ namespace API_Server.Migrations
 
                     b.HasIndex("ProductsId");
 
-                    b.ToTable("DiscountProduct", (string)null);
+                    b.ToTable("DiscountProduct");
                 });
 
             modelBuilder.Entity("OrderProduct", b =>
@@ -320,7 +267,7 @@ namespace API_Server.Migrations
 
                     b.HasIndex("ProductsId");
 
-                    b.ToTable("OrderProduct", (string)null);
+                    b.ToTable("OrderProduct");
                 });
 
             modelBuilder.Entity("API_Server.Models.Order", b =>

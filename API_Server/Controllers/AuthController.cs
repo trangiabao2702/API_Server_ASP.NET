@@ -1,7 +1,7 @@
 ﻿using API_Server.Data;
 using API_Server.Dto;
 using API_Server.Models;
-using API_Server.Services;
+using API_Server.Services.EmailService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

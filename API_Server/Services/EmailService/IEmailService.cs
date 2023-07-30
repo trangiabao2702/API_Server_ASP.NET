@@ -1,6 +1,6 @@
 ﻿using API_Server.Models;
 
-namespace API_Server.Services
+namespace API_Server.Services.EmailService
 {
     public interface IEmailService
     {

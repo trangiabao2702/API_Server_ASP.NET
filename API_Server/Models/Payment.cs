@@ -1,4 +1,6 @@
-﻿namespace API_Server.Models
+﻿using System.Text.Json.Serialization;
+
+namespace API_Server.Models
 {
     public class Payment
     {
@@ -10,6 +12,8 @@
         public string Gateway { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
+
+        [JsonIgnore]
         public Order Order { get; set; }
     }
 }

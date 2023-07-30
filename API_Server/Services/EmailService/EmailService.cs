@@ -2,7 +2,7 @@
 using MailKit.Net.Smtp;
 using MimeKit;
 
-namespace API_Server.Services
+namespace API_Server.Services.EmailService
 {
     public class EmailService : IEmailService
     {
@@ -13,7 +13,7 @@ namespace API_Server.Services
             _emailConfiguration = emailConfiguration;
         }
 
-        public void SendEmail (Message message)
+        public void SendEmail(Message message)
         {
             var emailMessage = CreateEmailMessage(message);
             Send(emailMessage);
