@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using API_Server.Dto;
+using System.Text.Json.Serialization;
 
 namespace API_Server.Models
 {
@@ -15,6 +16,15 @@ namespace API_Server.Models
         public List<Product> Products { get; set; }
 
         public Category() {
+            CreatedAt = DateTime.Now;
+            ModifiedAt = DateTime.Now;
+            DeletedAt = null;
+        }
+
+        public Category(CategoryDto categoryDto)
+        {
+            Name = categoryDto.Name;
+            Description = categoryDto.Description;
             CreatedAt = DateTime.Now;
             ModifiedAt = DateTime.Now;
             DeletedAt = null;
