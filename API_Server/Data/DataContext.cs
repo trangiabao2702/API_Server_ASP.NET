@@ -70,5 +70,6 @@ namespace API_Server.Data
         public DbSet<Discount> Discounts { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
     }
 }

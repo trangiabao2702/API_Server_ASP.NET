@@ -18,7 +18,7 @@ namespace API_Server.Models
         public DateTime? DeletedAt { get; set; }
 
         [JsonIgnore]
-        public List<Order> Orders { get; set; }
+        public List<OrderDetail> OrderDetails { get; set; }
 
         [JsonIgnore]
         public Category Category { get; set; }
