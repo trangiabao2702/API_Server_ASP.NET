@@ -105,5 +105,19 @@ namespace API_Server.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("{searchText}/page/{page}")]
+        public async Task<ActionResult<ProductSearchDto>> SearchProducts (string searchText, int page)
+        {
+            try
+            {
+                var products = await _productService.SearchProducts(searchText, page);
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

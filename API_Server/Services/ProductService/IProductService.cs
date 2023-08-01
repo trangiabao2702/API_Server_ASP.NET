@@ -11,5 +11,6 @@ namespace API_Server.Services.ProductService
         Task<int> AddProduct(ProductCreateDto product);
         Task<int?> UpdateProduct(int id, ProductCreateDto newProduct);
         Task<int?> DeleteProduct(int id);
+        Task<ProductSearchDto> SearchProducts(string searchText, int page);
     }
 }

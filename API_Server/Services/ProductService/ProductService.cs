@@ -66,5 +66,31 @@ namespace API_Server.Services.ProductService
             var result = await _context.SaveChangesAsync();
             return result;
         }
+
+        private async Task<List<Product>> FindProductsBySearchText(string searchText)
+        {
+            return await _context.Products
+                                 .Where(p => p.Name.ToLower().Contains(searchText.ToLower()) || p.Description.ToLower().Contains(searchText.ToLower()))
+                                 .ToListAsync();
+        }
+
+        public async Task<ProductSearchDto> SearchProducts(string searchText, int page)
+        {
+            ProductSearchDto result = new ProductSearchDto();
+
+            result.CurrentPage = page;
+
+            var pageResults = 2f;
+            result.Pages = (int)Math.Ceiling((await FindProductsBySearchText(searchText)).Count / pageResults);
+
+            result.Products = await _context.Products
+                                            .Where(p => p.Name.ToLower().Contains(searchText.ToLower())
+                                                   || p.Description.ToLower().Contains(searchText.ToLower()))
+                                            .Skip((page - 1) * (int)pageResults)
+                                            .Take((int)pageResults)
+                                            .ToListAsync();
+
+            return result;
+        }
     }
 }

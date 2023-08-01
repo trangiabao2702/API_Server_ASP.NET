@@ -11,5 +11,6 @@ namespace API_Server.Services.CategoryService
         Task<int?> PutCategory(int id, CategoryDto updateCategory);
         Task<int?> PostCategory(CategoryDto newCategory);
         Task<int?> DeleteCategory(int id);
+        Task<List<Product>> GetProductsByCategoryId(int id);
     }
 }

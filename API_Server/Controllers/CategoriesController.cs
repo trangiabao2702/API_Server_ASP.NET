@@ -99,5 +99,19 @@ namespace API_Server.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("{id}/products")]
+        public async Task<ActionResult<List<Product>>> GetProductsByCategoryId(int id)
+        {
+            try
+            {
+                var result = await _categoryService.GetProductsByCategoryId(id);
+                return Ok(result);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

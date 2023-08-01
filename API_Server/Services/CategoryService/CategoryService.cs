@@ -1,6 +1,7 @@
 ﻿using API_Server.Data;
 using API_Server.Dto;
 using API_Server.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API_Server.Services.CategoryService
@@ -72,6 +73,12 @@ namespace API_Server.Services.CategoryService
 
             var result = await _context.SaveChangesAsync();
 
+            return result;
+        }
+
+        public async Task<List<Product>> GetProductsByCategoryId(int id)
+        {
+            var result = await _context.Products.Where(p => p.Category.Id == id).ToListAsync();
             return result;
         }
     }
